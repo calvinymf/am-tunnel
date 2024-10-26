@@ -1,63 +1,78 @@
 
 /**
-*- Telegram交流群：https://t.me/AM_CLUBS
-*- YouTube频道：https://youtube.com/@AM_CLUB
-*- VLESS订阅地址：https://worker.amcloud.filegear-sg.me/866853eb-5293-4f09-bf00-e13eb237c655
-*- Github仓库地址：https://github.com/ansoncloud8
-**/
+ * YouTube Channel: https://youtube.com/@AM_CLUB
+ * GitHub Repository: https://github.com/amclubs
+ * Telegram Group: https://t.me/AM_CLUBS
+ * Personal Blog: https://am.809098.xyz
+ */
 
 // @ts-ignore
 import { connect } from 'cloudflare:sockets';
 
-// How to generate your own UUID:
-// [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
+// Generate your own UUID using the following command in PowerShell:
+// Powershell -NoExit -Command "[guid]::NewGuid()"
 let userID = '97cc2bed-de52-48d0-bfba-63dded0e789b';
 
-const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'workers.cloudflare.cyou'];
-
-// if you want to use ipv6 or single proxyIP, please add comment at this line and remove comment at the next line
+// Proxy IPs to choose from
+let proxyIPs = [
+	'cdn.xn--b6gac.eu.org',
+	'cdn-all.xn--b6gac.eu.org',
+	'workers.cloudflare.cyou'
+];
+// Randomly select a proxy IP from the list
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-// use single proxyIP instead of random
-// let proxyIP = 'cdn.xn--b6gac.eu.org';
-// ipv6 proxyIP example remove comment to use
-// let proxyIP = "[2a01:4f8:c2c:123f:64:5:6810:c55a]"
+let proxyPort = 443;
 
-let dohURL = 'https://sky.rethinkdns.com/1:-Pf_____9_8A_AMAIgE8kMABVDDmKOHTAKg='; // https://cloudflare-dns.com/dns-query or https://dns.google/dns-query
+// Setting the socks5 will ignore proxyIP
+// Example:  user:pass@host:port  or  host:port
+let socks5 = '';
+let socks5Enable = false;
+let parsedSocks5 = {};
 
-// 设置优选地址api接口
-let addressesapi = [
-	'https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/ipv4.txt', //可参考内容格式 自行搭建。
-	//'https://raw.githubusercontent.com/ansoncloud8/am-tunnel/dev/ipv6.txt', //IPv6优选内容格式 自行搭建。
+// https://cloudflare-dns.com/dns-query or https://dns.google/dns-query
+// DNS-over-HTTPS URL
+let dohURL = 'https://sky.rethinkdns.com/1:-Pf_____9_8A_AMAIgE8kMABVDDmKOHTAKg=';
+
+// Preferred address API interface
+let ipUrlTxt = [
+	'https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/ipv4.txt',
+	// 'https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/ipv6.txt'
 ];
-
-// 设置优选地址，不带端口号默认443，TLS订阅生成
-let addresses = [
-	'icook.hk:443#t.me/AM_CLUBS',//官方优选域名
-	//'cloudflare.cfgo.cc:443#关注YouTube频道@AM_CLUB',
-	'visa.com:443#youtube.com/@AM_CLUB'
+let ipUrlCsv = [
+	// 'https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/ipv4.csv'
 ];
-
-let autoaddress = [
-	'icook.hk:443',
-	'cloudflare.cfgo.cc:443',
-	'visa.com:443'
+// Preferred addresses with optional TLS subscription
+let ipLocal = [
+	'visa.cn:443#youtube.com/@AM_CLUB 订阅频道获取更多教程',
+	'icook.hk#t.me/AM_CLUBS 加入交流群解锁更多优选节点',
+	'time.is:443#github.com/amclubs GitHub仓库查看更多项目'
 ];
+let noTLS = 'false';
+let sl = 5;
 
-let FileName = 'ansoncloud8.github.io';
-let tagName = 'youtube.com/@am_club'
-let SUBUpdateTime = 6;
-let total = 99;//PB
-//let timestamp = now;
-let timestamp = 4102329600000;//2099-12-31
-const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
+// let tagName = 'amclubs';
+let subUpdateTime = 6; // Subscription update time in hours
+let timestamp = 4102329600000; // Timestamp for the end date (2099-12-31)
+let total = 99 * 1125899906842624; // PB (perhaps referring to bandwidth or total entries)
+let download = Math.floor(Math.random() * 1099511627776);
+let upload = download;
 
-// 虚假uuid和hostname，用于发送给配置生成服务
-let fakeUserID = generateUUID();
-let fakeHostName = generateRandomString();
+// Network protocol type
+let network = 'ws'; // WebSocket
 
-let sub = 'worker.amcloud.filegear-sg.me';// 内置优选订阅生成器，可自行搭建
-let subconverter = 'url.v1.mk';// clash订阅转换后端，目前使用肥羊的订阅转换功能。自带虚假uuid和host订阅。
-let subconfig = "https://raw.githubusercontent.com/ansoncloud8/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini"; //订阅配置文件
+// Fake UUID and hostname for configuration generation
+let fakeUserID;
+let fakeHostName;
+
+// Subscription and conversion details
+let subProtocol = 'https';
+let subConverter = 'url.v1.mk'; // Subscription conversion backend using Sheep's function
+let subConfig = "https://raw.githubusercontent.com/amclubs/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini"; // Subscription profile
+let fileName = 'youtube.com/@am_club';
+let isBase64 = true;
+
+let botToken = '';
+let chatID = '';
 
 
 if (!isValidUUID(userID)) {
@@ -70,235 +85,166 @@ export default {
 	 * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string, NODE_ID: int, API_HOST: string, API_TOKEN: string}} env
 	 * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
 	 * @returns {Promise<Response>}
-	 */
+	*/
 	async fetch(request, env, ctx) {
-		// uuid_validator(request);
 		try {
-			let expire = Math.floor(timestamp / 1000);
-			let UD = Math.floor(((timestamp - Date.now()) / timestamp * 99 * 1099511627776 * 1024) / 2);
-			const url = new URL(request.url);
-			const uuid = url.searchParams.get('uuid') ? url.searchParams.get('uuid').toLowerCase() : "null";
+			const {
+				UUID,
+				PROXYIP,
+				SOCKS5,
+				DNS_RESOLVER_URL,
+				IP_LOCAL,
+				IP_URL_TXT,
+				IP_URL_CSV,
+				NO_TLS,
+				SL,
+				SUB_CONFIG,
+				SUB_CONVERTER,
+				SUB_NAME,
+				CF_EMAIL,
+				CF_KEY,
+				CF_ID = 0,
+				TG_TOKEN,
+				TG_ID,
+				//兼容
+				ADDRESSESAPI,
+			} = env;
 
-			sub = env.SUB || sub;
-			userID = env.UUID || userID;
-			proxyIP = env.PROXYIP || proxyIP;
-			dohURL = env.DNS_RESOLVER_URL || dohURL;
-			subconfig = env.SUBCONFIG || subconfig;
-			let userID_Path = userID;
-			if (userID.includes(',')) {
-				userID_Path = userID.split(',')[0];
+			userID = (UUID || userID).toLowerCase();
+			if (PROXYIP) {
+				proxyIPs = await addIpText(PROXYIP);
+				proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
+				const [ip, port] = proxyIP.split(':');
+				proxyIP = ip;
+				proxyPort = port || proxyPort;
 			}
 
-			if (env.ADDRESSESAPI){
-				addressesapi = [];
-				addressesapi = await ADD(env.ADDRESSESAPI);
-			} 		
-			
+			const url = new URL(request.url);
+			socks5 = SOCKS5 || url.searchParams.get('socks5') || socks5;
+			parsedSocks5 = await parseSocks5FromUrl(socks5, url);
+			if (parsedSocks5) {
+				socks5Enable = true;
+			}
+
+			dohURL = (DNS_RESOLVER_URL || dohURL);
+
+			if (IP_LOCAL) {
+				ipLocal = await addIpText(IP_LOCAL);
+			}
+			//兼容旧的，如果有IP_URL_TXT新的则不用旧的
+			if (ADDRESSESAPI) {
+				ipUrlTxt = await addIpText(ADDRESSESAPI);
+			}
+			if (IP_URL_TXT) {
+				ipUrlTxt = await addIpText(IP_URL_TXT);
+			}
+			if (IP_URL_CSV) {
+				ipUrlCsv = await addIpText(IP_URL_CSV);
+			}
+
+			noTLS = (NO_TLS || noTLS);
+			sl = (SL || sl);
+			subConfig = (SUB_CONFIG || subConfig);
+			subConverter = (SUB_CONVERTER || subConverter);
+			fileName = (SUB_NAME || subConverter);
+			botToken = (TG_TOKEN || botToken);
+			chatID = (TG_ID || chatID);
+
+			// Unified protocol for handling subconverters
+			const [subProtocol, subConverterWithoutProtocol] = (subConverter.startsWith("http://") || subConverter.startsWith("https://"))
+				? subConverter.split("://")
+				: [undefined, subConverter];
+			subConverter = subConverterWithoutProtocol;
+
+			// console.log(`proxyIPs: ${proxyIPs} \n proxyIP: ${proxyIP} \n ipLocal: ${ipLocal} \n ipUrlTxt: ${ipUrlTxt} `);
+
+			//const uuid = url.searchParams.get('uuid')?.toLowerCase() || 'null';
+			const ua = request.headers.get('User-Agent') || 'null';
+			const userAgent = ua.toLowerCase();
+			const host = request.headers.get('Host');
 			const upgradeHeader = request.headers.get('Upgrade');
-			if (!upgradeHeader || upgradeHeader !== 'websocket') {
-				switch (url.pathname) {
-					case `/cf`: {
-						return new Response(JSON.stringify(request.cf, null, 4), {
-							status: 200,
-							headers: {
-								"Content-Type": "application/json;charset=utf-8",
-							},
-						});
-					}
-					case `/${userID_Path}`: {
-						const vlessConfig = getVLESSConfig(userID, request.headers.get('Host'));
-						return new Response(`${vlessConfig}`, {
-							status: 200,
-							headers: {
-								"Content-Type": "text/html; charset=utf-8",
-							}
-						});
-					};
-					case `/sub/${userID_Path}`: {
-						const url = new URL(request.url);
-						const searchParams = url.searchParams;
-						const format = searchParams.get('format') ? searchParams.get('format').toLowerCase() : null;
-						const dq = searchParams.get('dq') ? searchParams.get('dq') : null;
-						const btoa_not = searchParams.get('btoa') ? searchParams.get('btoa').toLowerCase() : null;
-						const vlessSubConfig = createVLESSSub(userID, request.headers.get('Host'), format, dq);
+			const expire = Math.floor(timestamp / 1000);
 
-						// Construct and return response object
-						if (format === 'qx') {
-							return new Response(vlessSubConfig, {
-								status: 200,
-								headers: {
-									"Content-Type": "text/plain;charset=utf-8",
-								}
-							});
-						} else if (btoa_not === 'btoa') {
-							return new Response(vlessSubConfig, {
-								status: 200,
-								headers: {
-									"Content-Type": "text/plain;charset=utf-8",
-								}
-							});
-						} else {
-							return new Response(btoa(vlessSubConfig), {
-								status: 200,
-								headers: {
-									"Content-Type": "text/plain;charset=utf-8",
-								}
-							});
-						}
-					};
-					case `/bestip/${uuid}`: {
-						const newAddressesapi = await getAddressesapi(addressesapi);
-						// const vlessSubConfig = createVlessBestIpSub(userID, request.headers.get('Host'), newAddressesapi,'format');
-						//拿随机
-						fakeUserID = uuid;
-						fakeHostName = url.searchParams.get('host') ? url.searchParams.get('host').toLowerCase() : request.headers.get('Host');
-						const format = url.searchParams.get('format') ? url.searchParams.get('format').toLowerCase() : "null";
-						const vlessSubConfig = createVlessBestIpSub(fakeUserID, fakeHostName, newAddressesapi, format);
-						const btoa_not = url.searchParams.get('btoa') ? url.searchParams.get('btoa').toLowerCase() : null;
-						
-					    if (btoa_not === 'btoa') {
-							return new Response(vlessSubConfig, {
-								status: 200,
-								headers: {
-									"Content-Type": "text/plain;charset=utf-8",
-								}
-							});
-						}else {
-							const base64Response = btoa(vlessSubConfig); // 重新进行 Base64 编码
-							const response = new Response(base64Response, {
-								headers: {
-									// "Content-Disposition": `attachment; filename*=utf-8''${encodeURIComponent(FileName)}; filename=${FileName}`,
-									"content-type": "text/plain; charset=utf-8",
-									"Profile-Update-Interval": `${SUBUpdateTime}`,
-									"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
-								},
-							});
-							return response;
-						}
-					};
-					case `/sub/bestip/${userID_Path}`: {
-						const tls = true;
-						// 如果是使用默认域名，则改成一个workers的域名，订阅器会加上代理
-						const hostName = request.headers.get('Host');
-						const userAgentHeader = request.headers.get('User-Agent');
-						const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
-						const format = url.searchParams.get('format') ? url.searchParams.get('format').toLowerCase() : "null";
-						if (hostName.includes(".workers.dev")) {
-							fakeHostName = `${fakeHostName}.${generateRandomString()}${generateRandomNumber()}.workers.dev`;
-						} else if (hostName.includes(".pages.dev")) {
-							fakeHostName = `${fakeHostName}.${generateRandomString()}${generateRandomNumber()}.pages.dev`;
-						} else if (hostName.includes("worker") || hostName.includes("notls") || tls == false) {
-							fakeHostName = `notls.${fakeHostName}${generateRandomNumber()}.net`;
-						} else {
-							fakeHostName = `${fakeHostName}.${generateRandomNumber()}.xyz`
-						}
-						let content = "";
-						let suburl = "";
-						let isBase64 = false;
-						if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || format === 'clash') {
-							suburl = `https://${subconverter}/sub?target=clash&url=https%3A%2F%2F${hostName}/bestip/${fakeUserID}%3Fhost%3D${fakeHostName}%26uuid%3D${fakeUserID}&insert=false&config=${encodeURIComponent(subconfig)}%26proxyip%3D${proxyIP}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
-						} else if ((userAgent.includes('sing-box') || userAgent.includes('singbox')) || format === 'singbox') {
-							suburl = `https://${subconverter}/sub?target=singbox&url=https%3A%2F%2F${hostName}/bestip/${fakeUserID}%3Fhost%3D${fakeHostName}%26uuid%3D${fakeUserID}&insert=false&config=${encodeURIComponent(subconfig)}%26proxyip%3D${proxyIP}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
-						} else if (format === 'qx') {
-							const newAddressesapi = await getAddressesapi(addressesapi);
-							const vlessSubConfig = createVlessBestIpSub(userID, request.headers.get('Host'), newAddressesapi, format);
-							return new Response(vlessSubConfig, {
-								headers: {
-									// "Content-Disposition": `attachment; filename*=utf-8''${encodeURIComponent(FileName)}; filename=${FileName}`,
-									"content-type": "text/plain; charset=utf-8",
-									"Profile-Update-Interval": `${SUBUpdateTime}`,
-									"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
-								},
-							});
-						} else {
-							suburl = `https://${sub}/bestip/${fakeUserID}?host=${fakeHostName}&uuid=${fakeUserID}&proxyip=${proxyIP}`;
-							isBase64 = true;
-						}
-						try {
-							const response = await fetch(suburl, {
-								headers: {
-									'User-Agent': 'ansoncloud8.github.io'
-								}
-							});
-							content = await response.text();
-							const result = revertFakeInfo(content, userID_Path, hostName, isBase64);
-
-							// content.replace(new RegExp(fakeUserID, 'g'), userID)
-							return new Response(result, {
-								headers: {
-									// "Content-Disposition": `attachment; filename*=utf-8''${encodeURIComponent(FileName)}; filename=${FileName}`,
-									"content-type": "text/plain; charset=utf-8",
-									"Profile-Update-Interval": `${SUBUpdateTime}`,
-									"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
-								},
-							});
-						} catch (error) {
-							console.error('Error fetching content:', error);
-							return `Error fetching content: ${error.message}`;
-						}
-					};
-					default:
-						// return new Response('Not found', { status: 404 });
-						//首页改成一个nginx伪装页
-						return new Response(await nginx(), {
-							headers: {
-								'Content-Type': 'text/html; charset=UTF-8',
-								'referer': 'https://www.google.com/search?q=ansoncloud8.github.io',
-							},
-						});
-
-					// For any other path, reverse proxy to 'ramdom website' and return the original response, caching it in the process
-					// const randomHostname = cn_hostnames[Math.floor(Math.random() * cn_hostnames.length)];
-					// const newHeaders = new Headers(request.headers);
-					// newHeaders.set('cf-connecting-ip', '1.2.3.4');
-					// newHeaders.set('x-forwarded-for', '1.2.3.4');
-					// newHeaders.set('x-real-ip', '1.2.3.4');
-					// newHeaders.set('referer', 'https://www.google.com/search?q=ansoncloud8.github.io');
-					// // Use fetch to proxy the request to 15 different domains
-					// const proxyUrl = 'https://' + randomHostname + url.pathname + url.search;
-					// let modifiedRequest = new Request(proxyUrl, {
-					// 	method: request.method,
-					// 	headers: newHeaders,
-					// 	body: request.body,
-					// 	redirect: 'manual',
-					// });
-					// const proxyResponse = await fetch(modifiedRequest, { redirect: 'manual' });
-					// // Check for 302 or 301 redirect status and return an error response
-					// if ([301, 302].includes(proxyResponse.status)) {
-					// 	return new Response(`Redirects to ${randomHostname} are not allowed.`, {
-					// 		status: 403,
-					// 		statusText: 'Forbidden',
-					// 	});
-					// }
-					// // Return the response from the proxy server
-					// return proxyResponse;
-				}
-			} else {
+			// If WebSocket upgrade, handle WebSocket request
+			if (upgradeHeader === 'websocket') {
 				return await vlessOverWSHandler(request);
 			}
+
+			fakeUserID = await getFakeUserID(userID);
+			fakeHostName = fakeUserID.slice(6, 9) + "." + fakeUserID.slice(13, 19);
+			console.log(`userID: ${userID}`);
+			console.log(`fakeUserID: ${fakeUserID}`);
+			// Handle routes based on the path
+			switch (url.pathname.toLowerCase()) {
+				case '/': {
+					return new Response(await nginx(), {
+						headers: {
+							'Content-Type': 'text/html; charset=UTF-8',
+							'referer': 'https://www.google.com/search?q=am.809098.xyz',
+						},
+					});
+				}
+
+				case `/${fakeUserID}`: {
+					// Disguise UUID node generation
+					const fakeConfig = await getVLESSConfig(userID, host, 'CF-FAKE-UA', url);
+					return new Response(fakeConfig, { status: 200 });
+				}
+
+				case `/${userID}`: {
+					// Handle real UUID requests and get node info
+					await sendMessage(
+						`#获取订阅 ${fileName}`,
+						request.headers.get('CF-Connecting-IP'),
+						`UA: ${userAgent}\n域名: ${url.hostname}\n入口: ${url.pathname + url.search}`
+					);
+
+					const vlessConfig = await getVLESSConfig(userID, host, userAgent, url);
+					const isMozilla = userAgent.includes('mozilla');
+
+					const config = await getCFConfig(CF_EMAIL, CF_KEY, CF_ID);
+					if (CF_EMAIL && CF_KEY) {
+						({ upload, download, total } = config);
+					}
+
+					// Prepare common headers
+					const commonHeaders = {
+						"Content-Type": isMozilla ? "text/html;charset=utf-8" : "text/plain;charset=utf-8",
+						"Profile-Update-Interval": `${subUpdateTime}`,
+						"Subscription-Userinfo": `upload=${upload}; download=${download}; total=${total}; expire=${expire}`,
+					};
+
+					// Add download headers if not a Mozilla browser
+					if (!isMozilla) {
+						commonHeaders["Content-Disposition"] = `attachment; filename=${fileName}; filename*=utf-8''${encodeURIComponent(fileName)}`;
+					}
+
+					return new Response(vlessConfig, {
+						status: 200,
+						headers: commonHeaders,
+					});
+				}
+
+				default: {
+					// Serve the default nginx disguise page
+					return new Response(await nginx(), {
+						headers: {
+							'Content-Type': 'text/html; charset=UTF-8',
+							'referer': 'https://www.google.com/search?q=am.809098.xyz',
+						},
+					});
+				}
+			}
 		} catch (err) {
-			/** @type {Error} */ let e = err;
-			return new Response(e.toString());
+			// Log error for debugging purposes
+			console.error('Error processing request:', err);
+			return new Response(`Error: ${err.message}`, { status: 500 });
 		}
 	},
 };
 
-export async function uuid_validator(request) {
-	const hostname = request.headers.get('Host');
-	const currentDate = new Date();
 
-	const subdomain = hostname.split('.')[0];
-	const year = currentDate.getFullYear();
-	const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-	const day = String(currentDate.getDate()).padStart(2, '0');
-
-	const formattedDate = `${year}-${month}-${day}`;
-
-	// const daliy_sub = formattedDate + subdomain
-	const hashHex = await hashHex_f(subdomain);
-	// subdomain string contains timestamps utc and uuid string TODO.
-	console.log(hashHex, subdomain, formattedDate);
-}
+/** ---------------------Tools------------------------------ */
 
 export async function hashHex_f(string) {
 	const encoder = new TextEncoder();
@@ -309,6 +255,861 @@ export async function hashHex_f(string) {
 	return hashHex;
 }
 
+/**
+ * Checks if a given string is a valid UUID.
+ * Note: This is not a real UUID validation.
+ * @param {string} uuid The string to validate as a UUID.
+ * @returns {boolean} True if the string is a valid UUID, false otherwise.
+ */
+function isValidUUID(uuid) {
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	return uuidRegex.test(uuid);
+}
+
+const byteToHex = [];
+for (let i = 0; i < 256; ++i) {
+	byteToHex.push((i + 256).toString(16).slice(1));
+}
+
+function unsafeStringify(arr, offset = 0) {
+	return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+}
+
+function stringify(arr, offset = 0) {
+	const uuid = unsafeStringify(arr, offset);
+	if (!isValidUUID(uuid)) {
+		throw TypeError("Stringified UUID is invalid");
+	}
+	return uuid;
+}
+
+async function getFakeUserID(userID) {
+	const date = new Date().toISOString().split('T')[0];
+	const rawString = `${userID}-${date}`;
+
+	const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawString));
+	const hashArray = Array.from(new Uint8Array(hashBuffer)).map(b => ('00' + b.toString(16)).slice(-2)).join('');
+
+	return `${hashArray.substring(0, 8)}-${hashArray.substring(8, 12)}-${hashArray.substring(12, 16)}-${hashArray.substring(16, 20)}-${hashArray.substring(20, 32)}`;
+}
+
+function revertFakeInfo(content, userID, hostName) {
+	//console.log(`revertFakeInfo-->: isBase64 ${isBase64} \n content: ${content}`);
+	if (isBase64) {
+		content = atob(content);//Base64 decrypt
+	}
+	content = content.replace(new RegExp(fakeUserID, 'g'), userID).replace(new RegExp(fakeHostName, 'g'), hostName);
+	if (isBase64) {
+		content = btoa(content);//Base64 encryption
+	}
+	return content;
+}
+
+/**
+ * Decodes a base64 string into an ArrayBuffer.
+ * @param {string} base64Str The base64 string to decode.
+ * @returns {{earlyData: ArrayBuffer|null, error: Error|null}} An object containing the decoded ArrayBuffer or null if there was an error, and any error that occurred during decoding or null if there was no error.
+ */
+function base64ToArrayBuffer(base64Str) {
+	if (!base64Str) {
+		return { earlyData: null, error: null };
+	}
+	try {
+		// go use modified Base64 for URL rfc4648 which js atob not support
+		base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+		const decode = atob(base64Str);
+		const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
+		return { earlyData: arryBuffer.buffer, error: null };
+	} catch (error) {
+		return { earlyData: null, error };
+	}
+}
+
+async function addIpText(envAdd) {
+	var addText = envAdd.replace(/[	|"'\r\n]+/g, ',').replace(/,+/g, ',');
+	//console.log(addText);
+	if (addText.charAt(0) == ',') {
+		addText = addText.slice(1);
+	}
+	if (addText.charAt(addText.length - 1) == ',') {
+		addText = addText.slice(0, addText.length - 1);
+	}
+	const add = addText.split(',');
+	// console.log(add);
+	return add;
+}
+
+function socks5Parser(socks5) {
+	let [latter, former] = socks5.split("@").reverse();
+	let username, password, hostname, port;
+
+	if (former) {
+		const formers = former.split(":");
+		if (formers.length !== 2) {
+			throw new Error('Invalid SOCKS address format: authentication must be in the "username:password" format');
+		}
+		[username, password] = formers;
+	}
+
+	const latters = latter.split(":");
+	port = Number(latters.pop());
+	if (isNaN(port)) {
+		throw new Error('Invalid SOCKS address format: port must be a number');
+	}
+
+	hostname = latters.join(":");
+	const isIPv6 = hostname.includes(":") && !/^\[.*\]$/.test(hostname);
+	if (isIPv6) {
+		throw new Error('Invalid SOCKS address format: IPv6 addresses must be enclosed in brackets, e.g., [2001:db8::1]');
+	}
+
+	//console.log(`socks5Parser-->: username ${username} \n password: ${password} \n hostname: ${hostname} \n port: ${port}`);
+	return { username, password, hostname, port };
+}
+
+async function parseSocks5FromUrl(socks5, url) {
+	if (/\/socks5?=/.test(url.pathname)) {
+		socks5 = url.pathname.split('5=')[1];
+	} else if (/\/socks[5]?:\/\//.test(url.pathname)) {
+		socks5 = url.pathname.split('://')[1].split('#')[0];
+	}
+
+	const authIdx = socks5.indexOf('@');
+	if (authIdx !== -1) {
+		let userPassword = socks5.substring(0, authIdx);
+		const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
+		if (base64Regex.test(userPassword) && !userPassword.includes(':')) {
+			userPassword = atob(userPassword);
+		}
+		socks5 = `${userPassword}@${socks5.substring(authIdx + 1)}`;
+	}
+
+	if (socks5) {
+		try {
+			return socks5Parser(socks5);
+		} catch (err) {
+			console.log(err.toString());
+			return null;
+		}
+	}
+	return null;
+}
+
+/** ---------------------Get data------------------------------ */
+
+let subParams = ['sub', 'base64', 'b64', 'clash', 'singbox', 'sb'];
+/**
+ * @param {string} userID
+ * @param {string | null} host
+ * @param {string} userAgent
+ * @param {string} _url
+ * @returns {Promise<string>}
+ */
+async function getVLESSConfig(userID, host, userAgent, _url) {
+	// console.log(`------------getVLESSConfig------------------`);
+	// console.log(`userID: ${userID} \n host: ${host} \n userAgent: ${userAgent} \n _url: ${_url}`);
+
+	userAgent = userAgent.toLowerCase();
+	let port = 443;
+	if (host.includes('.workers.dev')) {
+		port = 80;
+	}
+	const [v2ray, clash] = getConfigLink(userID, host, host, port, host);
+
+	if (userAgent.includes('mozilla') && !subParams.some(param => _url.searchParams.has(param))) {
+		return getHtmlResponse(socks5Enable, userID, host, v2ray, clash);
+	}
+
+	// Get node information
+	fakeHostName = getFakeHostName(host);
+	const ipUrlTxtAndCsv = await getIpUrlTxtAndCsv(noTLS);
+
+	// console.log(`txt: ${ipUrlTxtAndCsv.txt} \n csv: ${ipUrlTxtAndCsv.csv}`);
+	let content = await getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxtAndCsv.txt, ipUrlTxtAndCsv.csv);
+
+	return _url.pathname === `/${fakeUserID}` ? content : revertFakeInfo(content, userID, host);
+
+}
+
+function getHtmlResponse(socks5Enable, userID, host, v2ray, clash) {
+	const subRemark = `IP_URL_TXT/IP_URL_CSV/IP_LOCAL`;
+	let proxyIPRemark = `PROXYIP: ${proxyIP}`;
+
+	if (socks5Enable) {
+		proxyIPRemark = `socks5: ${parsedSocks5.hostname}:${parsedSocks5.port}`;
+	}
+
+	let remark = `您的订阅节点由设置变量 ${subRemark} 提供, 当前使用反代是${proxyIPRemark}`;
+
+	if (!proxyIP && !socks5Enable) {
+		remark = `您的订阅节点由设置变量 ${subRemark} 提供, 当前没设置反代, 推荐您设置PROXYIP变量或SOCKS5变量或订阅连接带proxyIP`;
+	}
+
+	return getConfigHtml(userID, host, remark, v2ray, clash);
+}
+
+function getFakeHostName(host) {
+	if (host.includes(".pages.dev")) {
+		return `${fakeHostName}.pages.dev`;
+	} else if (host.includes(".workers.dev") || host.includes("notls") || noTLS === 'true') {
+		return `${fakeHostName}.workers.dev`;
+	}
+	return `${fakeHostName}.xyz`;
+}
+
+async function getIpUrlTxtAndCsv(noTLS) {
+	if (noTLS === 'true') {
+		return {
+			txt: await getIpUrlTxt(ipUrlTxt),
+			csv: await getIpUrlCsv('FALSE')
+		};
+	}
+	return {
+		txt: await getIpUrlTxt(ipUrlTxt),
+		csv: await getIpUrlCsv('TRUE')
+	};
+}
+
+async function getIpUrlTxt(ipUrlTxts) {
+	if (!ipUrlTxts || ipUrlTxts.length === 0) {
+		return [];
+	}
+
+	let ipTxt = "";
+
+	// Create an AbortController object to control the cancellation of fetch requests
+	const controller = new AbortController();
+
+	// Set a timeout to trigger the cancellation of all requests after 2 seconds
+	const timeout = setTimeout(() => {
+		controller.abort(); // Cancel all requests
+	}, 2000);
+
+	try {
+		// Use Promise.allSettled to wait for all API requests to complete, regardless of success or failure
+		// Iterate over the api array and send a fetch request to each API URL
+		const responses = await Promise.allSettled(ipUrlTxts.map(apiUrl => fetch(apiUrl, {
+			method: 'GET',
+			headers: {
+				'Accept': 'text/html,application/xhtml+xml,application/xml;',
+				'User-Agent': 'amclubs/am-cf-tunnel'
+			},
+			signal: controller.signal // Attach the AbortController's signal to the fetch request to allow cancellation when needed
+		}).then(response => response.ok ? response.text() : Promise.reject())));
+
+		// Iterate through all the responses
+		for (const response of responses) {
+			// Check if the request was fulfilled successfully
+			if (response.status === 'fulfilled') {
+				// Get the response content
+				const content = await response.value;
+				ipTxt += content + '\n';
+			}
+		}
+	} catch (error) {
+		console.error(error);
+	} finally {
+		// Clear the timeout regardless of success or failure
+		clearTimeout(timeout);
+	}
+
+	// Process the result using addIpText function
+	const newIpTxt = await addIpText(ipTxt);
+	// console.log(`ipUrlTxts: ${ipUrlTxts} \n ipTxt: ${ipTxt} \n newIpTxt: ${newIpTxt} `);
+
+	// Return the processed result
+	return newIpTxt;
+}
+
+async function getIpUrlCsv(tls) {
+	// Check if the CSV URLs are valid
+	if (!ipUrlCsv || ipUrlCsv.length === 0) {
+		return [];
+	}
+
+	const newAddressesCsv = [];
+
+	// Fetch and process all CSVs concurrently
+	const fetchCsvPromises = ipUrlCsv.map(async (csvUrl) => {
+		try {
+			const response = await fetch(csvUrl);
+
+			// Ensure the response is successful
+			if (!response.ok) {
+				console.error('Error fetching CSV:', response.status, response.statusText);
+				return;
+			}
+
+			// Parse the CSV content and split it into lines
+			const text = await response.text();
+			const lines = text.includes('\r\n') ? text.split('\r\n') : text.split('\n');
+
+			// Ensure we have a non-empty CSV
+			if (lines.length < 2) {
+				console.error('CSV file is empty or has no data rows');
+				return;
+			}
+
+			// Extract the header and get required field indexes
+			const header = lines[0].trim().split(',');
+			const tlsIndex = header.indexOf('TLS');
+			const ipAddressIndex = 0; // Assuming the first column is IP address
+			const portIndex = 1; // Assuming the second column is port
+			const dataCenterIndex = tlsIndex + 1; // Data center assumed to be right after TLS
+			const speedIndex = header.length - 1; // Last column for speed
+
+			// If the required fields are missing, skip this CSV
+			if (tlsIndex === -1) {
+				console.error('CSV file missing required TLS field');
+				return;
+			}
+
+			// Process the data rows
+			for (let i = 1; i < lines.length; i++) {
+				const columns = lines[i].trim().split(',');
+
+				// Skip empty or malformed rows
+				if (columns.length < header.length) {
+					continue;
+				}
+
+				// Check if TLS matches and speed is greater than sl
+				const tlsValue = columns[tlsIndex].toUpperCase();
+				const speedValue = parseFloat(columns[speedIndex]);
+
+				if (tlsValue === tls && speedValue > sl) {
+					const ipAddress = columns[ipAddressIndex];
+					const port = columns[portIndex];
+					const dataCenter = columns[dataCenterIndex];
+					newAddressesCsv.push(`${ipAddress}:${port}#${dataCenter}`);
+				}
+			}
+		} catch (error) {
+			console.error('Error processing CSV URL:', csvUrl, error);
+		}
+	});
+
+	// Wait for all CSVs to be processed
+	await Promise.all(fetchCsvPromises);
+
+	return newAddressesCsv;
+}
+
+const protocolTypeBase64 = 'dmxlc3M=';
+/**
+ * Get node configuration information
+ * @param {*} uuid 
+ * @param {*} host 
+ * @param {*} address 
+ * @param {*} port 
+ * @param {*} remarks 
+ * @returns 
+ */
+function getConfigLink(uuid, host, address, port, remarks) {
+	const protocolType = atob(protocolTypeBase64);
+
+	const encryption = 'none';
+	let path = '/?ed=2560';
+	const fingerprint = 'randomized';
+	let tls = ['tls', true];
+	if (host.includes('.workers.dev') || host.includes('pages.dev')) {
+		path = `/${host}${path}`;
+		remarks += ' 请通过绑定自定义域名订阅！';
+	}
+
+	const v2ray = getV2rayLink({ protocolType, host, uuid, address, port, remarks, encryption, path, fingerprint, tls });
+	const clash = getClashLink(protocolType, host, address, port, uuid, path, tls, fingerprint);
+
+	return [v2ray, clash];
+}
+
+/**
+ * Get vless information
+ * @param {*} param0 
+ * @returns 
+ */
+function getV2rayLink({ protocolType, host, uuid, address, port, remarks, encryption, path, fingerprint, tls }) {
+	let sniAndFp = `&sni=${host}&fp=${fingerprint}`;
+	if (portSet_http.has(parseInt(port))) {
+		tls = ['', false];
+		sniAndFp = '';
+	}
+
+	const v2rayLink = `${protocolType}://${uuid}@${address}:${port}?encryption=${encryption}&security=${tls[0]}&type=${network}&host=${host}&path=${encodeURIComponent(path)}${sniAndFp}#${encodeURIComponent(remarks)}`;
+	return v2rayLink;
+}
+
+/**
+ * getClashLink
+ * @param {*} protocolType 
+ * @param {*} host 
+ * @param {*} address 
+ * @param {*} port 
+ * @param {*} uuid 
+ * @param {*} path 
+ * @param {*} tls 
+ * @param {*} fingerprint 
+ * @returns 
+ */
+function getClashLink(protocolType, host, address, port, uuid, path, tls, fingerprint) {
+	return `- {type: ${protocolType}, name: ${host}, server: ${address}, port: ${port}, password: ${uuid}, network: ${network}, tls: ${tls[1]}, udp: false, sni: ${host}, client-fingerprint: ${fingerprint}, skip-cert-verify: true,  ws-opts: {path: ${path}, headers: {Host: ${host}}}}`;
+
+	// 	return `
+	//   - type: ${protocolType}
+	//     name: ${host}
+	//     server: ${address}
+	//     port: ${port}
+	//     uuid: ${uuid}
+	//     network: ${network}
+	//     tls: ${tls[1]}
+	//     udp: false
+	//     sni: ${host}
+	//     client-fingerprint: ${fingerprint}
+	//     ws-opts:
+	//       path: "${path}"
+	//       headers:
+	//         host: ${host}
+	// 	`;
+}
+
+/**
+ * Generate home page
+ * @param {*} userID 
+ * @param {*} hostName 
+ * @param {*} remark 
+ * @param {*} v2ray 
+ * @param {*} clash 
+ * @returns 
+ */
+function getConfigHtml(userID, host, remark, v2ray, clash) {
+	// HTML Head with CSS and FontAwesome library
+	const htmlHead = `
+    <head>
+      <title>am-cf-tunnel(AM科技)</title>
+      <meta name='description' content='This is a project to generate free vmess nodes. For more information, please subscribe youtube(AM科技) https://youtube.com/@AM_CLUB and follow GitHub https://github.com/amclubs ' />
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f0f0f0;
+          color: #333;
+          padding: 0;
+          margin: 0;
+        }
+        a {
+          color: #1a0dab;
+          text-decoration: none;
+        }
+        img {
+          max-width: 100%;
+          height: auto;
+        }
+        pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          background-color: #fff;
+          border: 1px solid #ddd;
+          padding: 10px;
+          margin: 0;
+        }
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+          body {
+            background-color: #333;
+            color: #f0f0f0;
+          }
+          a {
+            color: #9db4ff;
+          }
+          pre {
+            background-color: #282a36;
+            border-color: #6272a4;
+          }
+        }
+      </style>
+    </head>
+  `;
+
+	// Prepare header string with left alignment
+	const header = `
+		<p align="left" style="padding-left: 20px; margin-top: 20px;">
+		Telegram交流群 技术大佬~在线交流</br>
+		<a href="t.me/AM_CLUBS" target="_blank">t.me/AM_CLUBS</a>
+		</br></br>
+		GitHub项目地址 点击Star!Star!Star!</br>
+		<a href="https://github.com/amclubs/am-cf-tunnel" target="_blank">https://github.com/amclubs/am-cf-tunnel</a>
+		</br></br>
+		YouTube频道,订阅频道,更多技术分享</br>
+		<a href="https://youtube.com/@AM_CLUB" target="_blank">https://youtube.com/@AM_CLUB</a>
+		</p>
+  `;
+
+	// Prepare the output string
+	const httpAddr = `https://${host}/${userID}`;
+	const output = `
+################################################################
+订阅地址, 支持 Base64、clash-meta、sing-box、Quantumult X、小火箭、surge 等订阅格式, ${remark}
+---------------------------------------------------------------
+通用订阅地址: <button onclick='copyToClipboard("${httpAddr}?sub")'><i class="fa fa-clipboard"></i> 点击复制订阅地址 </button>
+${httpAddr}?sub
+
+Base64订阅地址: <button onclick='copyToClipboard("${httpAddr}?base64")'><i class="fa fa-clipboard"></i> 点击复制订阅地址 </button>
+${httpAddr}?base64
+
+clash订阅地址: <button onclick='copyToClipboard("${httpAddr}?clash")'><i class="fa fa-clipboard"></i> 点击复制订阅地址 </button>
+${httpAddr}?clash
+
+singbox订阅地址: <button onclick='copyToClipboard("${httpAddr}?singbox")'><i class="fa fa-clipboard"></i> 点击复制订阅地址 </button>
+${httpAddr}?singbox
+---------------------------------------------------------------
+################################################################
+v2ray
+---------------------------------------------------------------
+${v2ray}
+---------------------------------------------------------------
+################################################################
+clash-meta
+---------------------------------------------------------------
+${clash}
+---------------------------------------------------------------
+################################################################
+  `;
+
+	// Final HTML
+	const html = `
+<html>
+${htmlHead}
+<body>
+  ${header}
+  <pre>${output}</pre>
+  <script>
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          alert("Copied to clipboard");
+        })
+        .catch(err => {
+          console.error("Failed to copy to clipboard:", err);
+        });
+    }
+  </script>
+</body>
+</html>
+  `;
+
+	return html;
+}
+
+
+let portSet_http = new Set([80, 8080, 8880, 2052, 2086, 2095, 2082]);
+let portSet_https = new Set([443, 8443, 2053, 2096, 2087, 2083]);
+/**
+ * 
+ * @param {*} host 
+ * @param {*} uuid 
+ * @param {*} noTLS 
+ * @param {*} ipUrlTxt 
+ * @param {*} ipUrlCsv 
+ * @returns 
+ */
+async function getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxt, ipUrlCsv) {
+	// Use Set object to remove duplicates
+	const uniqueIpTxt = [...new Set([...ipLocal, ...ipUrlTxt, ...ipUrlCsv])];
+	let responseBody = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent);
+	// console.log(`getSubscribeNode---> responseBody: ${responseBody} `);
+
+	if (!userAgent.includes(('CF-FAKE-UA').toLowerCase())) {
+
+		let url = `https://${host}/${fakeUserID}`;
+
+		if (isClashCondition(userAgent, _url)) {
+			isBase64 = false;
+			url = createSubConverterUrl('clash', url, subConfig, subConverter, subProtocol);
+		} else if (isSingboxCondition(userAgent, _url)) {
+			isBase64 = false;
+			url = createSubConverterUrl('singbox', url, subConfig, subConverter, subProtocol);
+		} else {
+			return responseBody;
+		}
+		const response = await fetch(url, {
+			headers: {
+				'User-Agent': `${userAgent} am-cf-tunnel/amclubs`
+			}
+		});
+		responseBody = await response.text();
+		//console.log(`getSubscribeNode---> url: ${url} `);
+	}
+
+	return responseBody;
+}
+
+function createSubConverterUrl(target, url, subConfig, subConverter, subProtocol) {
+	return `${subProtocol}://${subConverter}/sub?target=${target}&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(subConfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+}
+
+function isClashCondition(userAgent, _url) {
+	return (userAgent.includes('clash') && !userAgent.includes('nekobox')) || (_url.searchParams.has('clash') && !userAgent.includes('subConverter'));
+}
+
+function isSingboxCondition(userAgent, _url) {
+	return userAgent.includes('sing-box') || userAgent.includes('singbox') || ((_url.searchParams.has('singbox') || _url.searchParams.has('sb')) && !userAgent.includes('subConverter'));
+}
+
+/**
+ * 
+ * @param {*} uniqueIpTxt 
+ * @param {*} noTLS 
+ * @param {*} host 
+ * @param {*} uuid 
+ * @returns 
+ */
+function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent) {
+	// Regex to match IPv4 and IPv6
+	const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
+
+	// Region codes mapped to corresponding emojis
+	const regionMap = {
+		'SG': '🇸🇬 SG',
+		'HK': '🇭🇰 HK',
+		'KR': '🇰🇷 KR',
+		'JP': '🇯🇵 JP',
+		'GB': '🇬🇧 GB',
+		'US': '🇺🇸 US',
+		'TW': '🇼🇸 TW',
+		'CF': '📶 CF'
+	};
+
+	const responseBody = uniqueIpTxt.map(ipTxt => {
+		let address = ipTxt;
+		let port = "443";
+		let remarks = "";
+
+		const match = address.match(regex);
+		if (match) {
+			address = match[1];
+			port = match[2] || port;
+			remarks = match[3] || host;
+		} else {
+			let ip, newPort, extra;
+
+			if (ipTxt.includes(':') && ipTxt.includes('#')) {
+				[ip, newPort, extra] = ipTxt.split(/[:#]/);
+			} else if (ipTxt.includes(':')) {
+				[ip, newPort] = ipTxt.split(':');
+			} else if (ipTxt.includes('#')) {
+				[ip, extra] = ipTxt.split('#');
+			} else {
+				ip = ipTxt;
+			}
+
+			address = ip;
+			port = newPort || port;
+			remarks = extra || host;
+			// console.log(`splitNodeData---> ip: ${ip} \n extra: ${extra} \n port: ${port}`);
+		}
+
+		// Replace region code with corresponding emoji
+		remarks = regionMap[remarks] || remarks;
+
+		// Check if TLS is disabled and if the port is in the allowed set
+		if (noTLS !== 'true' && portSet_http.has(parseInt(port))) {
+			return null; // Skip this iteration
+		}
+
+		const [v2ray, clash] = getConfigLink(uuid, host, address, port, remarks);
+		return v2ray;
+	}).filter(Boolean).join('\n');
+
+	let base64Response = responseBody;
+	return btoa(base64Response);
+}
+
+/** ---------------------Get CF data------------------------------ */
+
+async function getCFConfig(email, key, accountIndex) {
+	try {
+		const now = new Date();
+		const today = new Date(now);
+		today.setHours(0, 0, 0, 0);
+
+		// Calculate default value
+		const ud = Math.floor(((now - today.getTime()) / 86400000) * 24 * 1099511627776 / 2);
+		let upload = ud;
+		let download = ud;
+		let total = 24 * 1099511627776;
+
+		if (email && key) {
+			const accountId = await getAccountId(email, key);
+			if (accountId) {
+				// Calculate start and end time
+				now.setUTCHours(0, 0, 0, 0);
+				const startDate = now.toISOString();
+				const endDate = new Date().toISOString();
+
+				// Get summary data
+				const [pagesSumResult, workersSumResult] = await getCFSum(accountId, accountIndex, email, key, startDate, endDate);
+				upload = pagesSumResult;
+				download = workersSumResult;
+				total = 102400;
+			}
+		}
+
+		return { upload, download, total };
+	} catch (error) {
+		console.error('Error in getCFConfig:', error);
+		return { upload: 0, download: 0, total: 0 };
+	}
+}
+
+/**
+ * 
+ * @param {*} email 
+ * @param {*} key 
+ * @returns 
+ */
+async function getAccountId(email, key) {
+	try {
+		const url = 'https://api.cloudflare.com/client/v4/accounts';
+		const headers = {
+			'X-AUTH-EMAIL': email,
+			'X-AUTH-KEY': key
+		};
+
+		const response = await fetch(url, { headers });
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		//console.error('getAccountId-->', data);
+
+		return data?.result?.[0]?.id || false;
+	} catch (error) {
+		console.error('Error fetching account ID:', error);
+		return false;
+	}
+}
+
+/**
+ * 
+ * @param {*} accountId 
+ * @param {*} accountIndex 
+ * @param {*} email 
+ * @param {*} key 
+ * @param {*} startDate 
+ * @param {*} endDate 
+ * @returns 
+ */
+async function getCFSum(accountId, accountIndex, email, key, startDate, endDate) {
+	try {
+		const [startDateISO, endDateISO] = [new Date(startDate), new Date(endDate)].map(d => d.toISOString());
+
+		const query = JSON.stringify({
+			query: `query getBillingMetrics($accountId: String!, $filter: AccountWorkersInvocationsAdaptiveFilter_InputObject) {
+				viewer {
+					accounts(filter: {accountTag: $accountId}) {
+						pagesFunctionsInvocationsAdaptiveGroups(limit: 1000, filter: $filter) {
+							sum {
+								requests
+							}
+						}
+						workersInvocationsAdaptive(limit: 10000, filter: $filter) {
+							sum {
+								requests
+							}
+						}
+					}
+				}
+			}`,
+			variables: {
+				accountId,
+				filter: { datetime_geq: startDateISO, datetime_leq: endDateISO }
+			},
+		});
+
+		const headers = {
+			'Content-Type': 'application/json',
+			'X-AUTH-EMAIL': email,
+			'X-AUTH-KEY': key
+		};
+
+		const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+			method: 'POST',
+			headers,
+			body: query
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const res = await response.json();
+		const accounts = res?.data?.viewer?.accounts?.[accountIndex];
+
+		if (!accounts) {
+			throw new Error('找不到账户数据');
+		}
+
+		const getSumRequests = (data) => data?.reduce((total, item) => total + (item?.sum?.requests || 0), 0) || 0;
+
+		const pagesSum = getSumRequests(accounts.pagesFunctionsInvocationsAdaptiveGroups);
+		const workersSum = getSumRequests(accounts.workersInvocationsAdaptive);
+
+		return [pagesSum, workersSum];
+
+	} catch (error) {
+		console.error('Error fetching billing metrics:', error);
+		return [0, 0];
+	}
+}
+
+const API_URL = 'http://ip-api.com/json/';
+const TELEGRAM_API_URL = 'https://api.telegram.org/bot';
+/**
+ * Send message to Telegram channel
+ * @param {string} type 
+ * @param {string} ip I
+ * @param {string} [add_data=""] 
+ */
+async function sendMessage(type, ip, add_data = "") {
+	if (botToken && chatID) {
+		try {
+			const ipResponse = await fetch(`${API_URL}${ip}?lang=zh-CN`);
+			let msg = `${type}\nIP: ${ip}\n${add_data}`;
+
+			if (ipResponse.ok) {
+				const ipInfo = await ipResponse.json();
+				msg = `${type}\nIP: ${ip}\n国家: ${ipInfo.country}\n城市: ${ipInfo.city}\n组织: ${ipInfo.org}\nASN: ${ipInfo.as}\n${add_data}`;
+			} else {
+				console.error(`Failed to fetch IP info. Status: ${ipResponse.status}`);
+			}
+
+			const telegramUrl = `${TELEGRAM_API_URL}${botToken}/sendMessage`;
+			const params = new URLSearchParams({
+				chat_id: chatID,
+				parse_mode: 'HTML',
+				text: msg
+			});
+
+			await fetch(`${telegramUrl}?${params.toString()}`, {
+				method: 'GET',
+				headers: {
+					'Accept': 'text/html,application/xhtml+xml,application/xml',
+					'Accept-Encoding': 'gzip, deflate, br',
+					'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36'
+				}
+			});
+
+		} catch (error) {
+			console.error('Error sending message:', error);
+		}
+	} else {
+		console.warn('botToken or chatID is missing.');
+	}
+}
+
+
+/** -------------------processing logic-------------------------------- */
 /**
  * Handles VLESS over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VLESS header.
  * @param {import("@cloudflare/workers-types").Request} request The incoming request object.
@@ -326,7 +1127,6 @@ async function vlessOverWSHandler(request) {
 		console.log(`[${currentDate} ${address}:${portWithRandomLog}] ${info}`, event || '');
 	};
 	const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
-
 	const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
 	/** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
@@ -351,42 +1151,42 @@ async function vlessOverWSHandler(request) {
 
 			const {
 				hasError,
-				message,
+				//message,
 				portRemote = 443,
 				addressRemote = '',
 				rawDataIndex,
 				vlessVersion = new Uint8Array([0, 0]),
 				isUDP,
+				addressType,
 			} = processVlessHeader(chunk, userID);
 			address = addressRemote;
 			portWithRandomLog = `${portRemote} ${isUDP ? 'udp' : 'tcp'} `;
+
 			if (hasError) {
-				// controller.error(message);
-				throw new Error(message); // cf seems has bug, controller.error will not end stream
+				throw new Error(message);
 			}
 
 			// If UDP and not DNS port, close it
 			if (isUDP && portRemote !== 53) {
 				throw new Error('UDP proxy only enabled for DNS which is port 53');
-				// cf seems has bug, controller.error will not end stream
 			}
 
 			if (isUDP && portRemote === 53) {
 				isDns = true;
 			}
 
-			// ["version", "附加信息长度 N"]
 			const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
 			const rawClientData = chunk.slice(rawDataIndex);
 
-			// TODO: support udp here when cf runtime has udp support
 			if (isDns) {
 				const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
 				udpStreamWrite = write;
 				udpStreamWrite(rawClientData);
 				return;
 			}
-			handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+			log(`processVlessHeader-->${addressType} Processing TCP outbound connection ${addressRemote}:${portRemote}`);
+
+			handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log, addressType);
 		},
 		close() {
 			log(`readableWebSocketStream is close`);
@@ -416,7 +1216,7 @@ async function vlessOverWSHandler(request) {
  * @param {function} log The logging function.
  * @returns {Promise<void>} The remote socket.
  */
-async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log,) {
+async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log, addressType,) {
 
 	/**
 	 * Connects to a given address and port and writes data to the socket.
@@ -424,16 +1224,17 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 	 * @param {number} port The port to connect to.
 	 * @returns {Promise<import("@cloudflare/workers-types").Socket>} A Promise that resolves to the connected socket.
 	 */
-	async function connectAndWrite(address, port) {
+	async function connectAndWrite(address, port, socks = false) {
 		/** @type {import("@cloudflare/workers-types").Socket} */
-		const tcpSocket = connect({
-			hostname: address,
-			port: port,
-		});
+		const tcpSocket = socks ? await socks5Connect(addressType, address, port, log)
+			: connect({
+				hostname: address,
+				port: port,
+			});
 		remoteSocket.value = tcpSocket;
-		log(`connected to ${address}:${port}`);
+		console.log(`connectAndWrite-${socks} connected to ${address}:${port}`);
 		const writer = tcpSocket.writable.getWriter();
-		await writer.write(rawClientData); // first write, nomal is tls client hello
+		await writer.write(rawClientData);
 		writer.releaseLock();
 		return tcpSocket;
 	}
@@ -443,7 +1244,9 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 	 * @returns {Promise<void>} A Promise that resolves when the retry is complete.
 	 */
 	async function retry() {
-		const tcpSocket = await connectAndWrite(proxyIP || addressRemote, portRemote)
+		const tcpSocket = socks5Enable ? await connectAndWrite(addressRemote, portRemote, true) : await connectAndWrite(proxyIP || addressRemote, proxyPort || portRemote);
+
+		console.log(`retry-${socks5Enable} connected to ${addressRemote}:${portRemote}`);
 		tcpSocket.closed.catch(error => {
 			console.log('retry tcpSocket closed error', error);
 		}).finally(() => {
@@ -508,7 +1311,6 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
 }
 
 // https://xtls.github.io/development/protocols/vless.html
-// https://github.com/zizifn/excalidraw-backup/blob/main/v2ray-protocol.excalidraw
 
 /**
  * Processes the VLESS header buffer and returns an object with the relevant information.
@@ -637,14 +1439,13 @@ function processVlessHeader(vlessBuffer, userID) {
 	return {
 		hasError: false,
 		addressRemote: addressValue,
-		addressType,
 		portRemote,
 		rawDataIndex: addressValueIndex + addressLength,
 		vlessVersion: version,
 		isUDP,
+		addressType,
 	};
 }
-
 
 /**
  * Converts a remote socket to a WebSocket connection.
@@ -719,37 +1520,6 @@ async function remoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, re
 	}
 }
 
-/**
- * Decodes a base64 string into an ArrayBuffer.
- * @param {string} base64Str The base64 string to decode.
- * @returns {{earlyData: ArrayBuffer|null, error: Error|null}} An object containing the decoded ArrayBuffer or null if there was an error, and any error that occurred during decoding or null if there was no error.
- */
-function base64ToArrayBuffer(base64Str) {
-	if (!base64Str) {
-		return { earlyData: null, error: null };
-	}
-	try {
-		// go use modified Base64 for URL rfc4648 which js atob not support
-		base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
-		const decode = atob(base64Str);
-		const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
-		return { earlyData: arryBuffer.buffer, error: null };
-	} catch (error) {
-		return { earlyData: null, error };
-	}
-}
-
-/**
- * Checks if a given string is a valid UUID.
- * Note: This is not a real UUID validation.
- * @param {string} uuid The string to validate as a UUID.
- * @returns {boolean} True if the string is a valid UUID, false otherwise.
- */
-function isValidUUID(uuid) {
-	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-	return uuidRegex.test(uuid);
-}
-
 const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
 /**
@@ -765,25 +1535,6 @@ function safeCloseWebSocket(socket) {
 		console.error('safeCloseWebSocket error', error);
 	}
 }
-
-const byteToHex = [];
-
-for (let i = 0; i < 256; ++i) {
-	byteToHex.push((i + 256).toString(16).slice(1));
-}
-
-function unsafeStringify(arr, offset = 0) {
-	return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-}
-
-function stringify(arr, offset = 0) {
-	const uuid = unsafeStringify(arr, offset);
-	if (!isValidUUID(uuid)) {
-		throw TypeError("Stringified UUID is invalid");
-	}
-	return uuid;
-}
-
 
 /**
  * Handles outbound UDP traffic by transforming the data into DNS queries and sending them over a WebSocket connection.
@@ -858,452 +1609,128 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
 	};
 }
 
-async function ADD(envadd) {
-	var addtext = envadd.replace(/[	|"'\r\n]+/g, ',').replace(/,+/g, ',');	// 将空格、双引号、单引号和换行符替换为逗号
-	//console.log(addtext);
-	if (addtext.charAt(0) == ',') addtext = addtext.slice(1);
-	if (addtext.charAt(addtext.length - 1) == ',') addtext = addtext.slice(0, addtext.length - 1);
-	const add = addtext.split(',');
-	// console.log(add);
-	return add;
+/**
+ * Handles outbound UDP traffic by transforming the data into DNS queries and sending them over a WebSocket connection.
+ * @param {ArrayBuffer} udpChunk - DNS query data sent from the client.
+ * @param {import("@cloudflare/workers-types").WebSocket} webSocket - The WebSocket connection to send the DNS queries over.
+ * @param {ArrayBuffer} vlessResponseHeader - The VLESS response header.
+ * @param {(string) => void} log - The logging function.
+ * @returns {{write: (chunk: Uint8Array) => void}} An object with a write method that accepts a Uint8Array chunk to write to the transform stream.
+ */
+async function handleDNSQuery(udpChunk, webSocket, vlessResponseHeader, log) {
+	try {
+		const dnsServer = '8.8.4.4';
+		const dnsPort = 53;
+		let vlessHeader = vlessResponseHeader;
+
+		const tcpSocket = connect({ hostname: dnsServer, port: dnsPort });
+		log(`Connected to ${dnsServer}:${dnsPort}`);
+
+		const writer = tcpSocket.writable.getWriter();
+		await writer.write(udpChunk);
+		writer.releaseLock();
+
+		await tcpSocket.readable.pipeTo(new WritableStream({
+			async write(chunk) {
+				if (webSocket.readyState === WS_READY_STATE_OPEN) {
+					const dataToSend = vlessHeader ? await new Blob([vlessHeader, chunk]).arrayBuffer() : chunk;
+					webSocket.send(dataToSend);
+					vlessHeader = null;
+				}
+			},
+			close() {
+				log(`TCP connection to DNS server (${dnsServer}) closed`);
+			},
+			abort(reason) {
+				console.error(`TCP connection to DNS server (${dnsServer}) aborted`, reason);
+			},
+		}));
+	} catch (error) {
+		console.error(`Exception in handleDNSQuery function: ${error.message}`);
+	}
 }
 
-async function getAddressesapi(api) {
-	if (!api || api.length === 0) {
-		return [];
-	}
 
-	let newapi = "";
+async function socks5Connect(ipType, remoteIp, remotePort, log) {
+	const { username, password, hostname, port } = parsedSocks5;
+	const socket = connect({ hostname, port });
+	const writer = socket.writable.getWriter();
+	const reader = socket.readable.getReader();
+	const encoder = new TextEncoder();
 
-	// 创建一个AbortController对象，用于控制fetch请求的取消
-	const controller = new AbortController();
+	const sendSocksGreeting = async () => {
+		const greeting = new Uint8Array([5, 2, 0, 2]);
+		await writer.write(greeting);
+		console.log('SOCKS5 greeting sent');
+	};
 
-	const timeout = setTimeout(() => {
-		controller.abort(); // 取消所有请求
-	}, 2000); // 2秒后触发
+	const handleAuthResponse = async () => {
+		const res = (await reader.read()).value;
+		if (res[1] === 0x02) {
+			console.log("SOCKS5 server requires authentication");
+			if (!username || !password) {
+				console.log("Please provide username and password");
+				throw new Error("Authentication required");
+			}
+			const authRequest = new Uint8Array([
+				1, username.length, ...encoder.encode(username),
+				password.length, ...encoder.encode(password)
+			]);
+			await writer.write(authRequest);
+			const authResponse = (await reader.read()).value;
+			if (authResponse[0] !== 0x01 || authResponse[1] !== 0x00) {
+				console.log("SOCKS5 server authentication failed");
+				throw new Error("Authentication failed");
+			}
+		}
+	};
+
+	const sendSocksRequest = async () => {
+		let DSTADDR;
+		switch (ipType) {
+			case 1:
+				DSTADDR = new Uint8Array([1, ...remoteIp.split('.').map(Number)]);
+				break;
+			case 2:
+				DSTADDR = new Uint8Array([3, remoteIp.length, ...encoder.encode(remoteIp)]);
+				break;
+			case 3:
+				DSTADDR = new Uint8Array([4, ...remoteIp.split(':').flatMap(x => [
+					parseInt(x.slice(0, 2), 16), parseInt(x.slice(2), 16)
+				])]);
+				break;
+			default:
+				console.log(`Invalid address type: ${ipType}`);
+				throw new Error("Invalid address type");
+		}
+		const socksRequest = new Uint8Array([5, 1, 0, ...DSTADDR, remotePort >> 8, remotePort & 0xff]);
+		await writer.write(socksRequest);
+		console.log('SOCKS5 request sent');
+
+		const response = (await reader.read()).value;
+		if (response[1] !== 0x00) {
+			console.log("SOCKS5 connection failed");
+			throw new Error("Connection failed");
+		}
+		console.log("SOCKS5 connection established");
+	};
 
 	try {
-		// 使用Promise.allSettled等待所有API请求完成，无论成功或失败
-		// 对api数组进行遍历，对每个API地址发起fetch请求
-		const responses = await Promise.allSettled(api.map(apiUrl => fetch(apiUrl, {
-			method: 'get',
-			headers: {
-				'Accept': 'text/html,application/xhtml+xml,application/xml;',
-				'User-Agent': 'ansoncloud8.github.io'
-			},
-			signal: controller.signal // 将AbortController的信号量添加到fetch请求中，以便于需要时可以取消请求
-		}).then(response => response.ok ? response.text() : Promise.reject())));
-
-		// 遍历所有响应
-		for (const response of responses) {
-			// 检查响应状态是否为'fulfilled'，即请求成功完成
-			if (response.status === 'fulfilled') {
-				// 获取响应的内容
-				const content = await response.value;
-				newapi += content + '\n';
-			}
-		}
+		await sendSocksGreeting();
+		await handleAuthResponse();
+		await sendSocksRequest();
 	} catch (error) {
-		console.error(error);
+		console.log(error.message);
+		return null; // Return null on failure
 	} finally {
-		// 无论成功或失败，最后都清除设置的超时定时器
-		clearTimeout(timeout);
+		writer.releaseLock();
+		reader.releaseLock();
 	}
-
-	const newAddressesapi = await ADD(newapi);
-
-	// 返回处理后的结果
-	return newAddressesapi;
+	return socket;
 }
 
 
-function generateRandomString() {
-	let minLength = 2;
-	let maxLength = 3;
-	let length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
-	let characters = 'abcdefghijklmnopqrstuvwxyz';
-	let result = '';
-	for (let i = 0; i < length; i++) {
-		result += characters[Math.floor(Math.random() * characters.length)];
-	}
-	return result;
-}
-
-function generateUUID() {
-	let uuid = '';
-	for (let i = 0; i < 32; i++) {
-		let num = Math.floor(Math.random() * 16);
-		if (num < 10) {
-			uuid += num;
-		} else {
-			uuid += String.fromCharCode(num + 55);
-		}
-	}
-	return uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5').toLowerCase();
-}
-
-function generateRandomNumber() {
-	let minNum = 100000;
-	let maxNum = 999999;
-	return Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
-}
-
-function revertFakeInfo(content, userID, hostName, isBase64) {
-	if (isBase64) content = atob(content);//Base64解码
-	content = content.replace(new RegExp(fakeUserID, 'g'), userID).replace(new RegExp(fakeHostName, 'g'), hostName);
-	if (isBase64) content = btoa(content);//Base64编码
-	return content;
-}
-
-/**
- *
- * @param {string} userID - single or comma separated userIDs
- * @param {string | null} hostName
- * @returns {string}
- */
-function getVLESSConfig(userIDs, hostName) {
-	const commonUrlPart = `:443?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
-	const hashSeparator = "################################################################";
-
-	// Split the userIDs into an array
-	const userIDArray = userIDs.split(",");
-
-	// Prepare output string for each userID
-	const output = userIDArray.map((userID) => {
-		const vlessMain = 'vless://' + userID + '@' + hostName + commonUrlPart;
-		const vlessSec = 'vless://' + userID + '@' + proxyIP + commonUrlPart;
-		return `################################################################
-telegram 交流群 技术大佬~在线交流!
-t.me/AM_CLUBS
----------------------------------------------------------------
-github 项目地址 点击Star!Star!Star!!!
-https://github.com/ansoncloud8/am-tunnel
----------------------------------------------------------------
-订阅YouTube频道,更多技术分享
-https://youtube.com/@AM_CLUB
-################################################################
-
-v2ray default ip
----------------------------------------------------------------
-${vlessMain}
-<button onclick='copyToClipboard("${vlessMain}")'><i class="fa fa-clipboard"></i> Copy vlessMain</button>
----------------------------------------------------------------
-v2ray with bestip
----------------------------------------------------------------
-${vlessSec}
-<button onclick='copyToClipboard("${vlessSec}")'><i class="fa fa-clipboard"></i> Copy vlessSec</button>
----------------------------------------------------------------
-clash-meta
----------------------------------------------------------------
-- type: vless
-  name: ${hostName}
-  server: ${hostName}
-  port: 443
-  uuid: ${userID}
-  network: ws
-  tls: true
-  udp: false
-  sni: ${hostName}
-  client-fingerprint: chrome
-  ws-opts:
-  path: "/?ed=2048"
-  headers:
-    host: ${hostName}
----------------------------------------------------------------
-################################################################
-`;
-	}).join('\n');
-	const sublink = `https://${hostName}/sub/${userIDArray[0]}`
-	const subbestip = `https://${hostName}/bestip/${userIDArray[0]}?uuid=${userIDArray[0]}`;
-	const singboxlink = `https://${hostName}/sub/bestip/${userIDArray[0]}?format=singbox&uuid=${fakeUserID}`;
-	const quantumultxlink = `https://${hostName}/sub/bestip/${userIDArray[0]}?format=qx&uuid=${fakeUserID}`;
-	const clashlink = `https://${hostName}/sub/bestip/${userIDArray[0]}?format=clash&uuid=${fakeUserID}`;
-	// Prepare header string
-
-	// Prepare header string
-	const header = `
-<p align='center'><img src='https://ansoncloud8.github.io/logo.png' alt='图片描述' style='margin-bottom: 20px;'>
-<b style='font-size: 15px;'>Welcome! This function generates configuration for VLESS protocol. If you found this useful, please check our GitHub project for more:</b>
-<b style='font-size: 15px;'>欢迎！这是生成 VLESS 协议的配置。如果您发现这个项目很好用，请查看我们的 GitHub 项目给我一个star：</b>
-<a href='https://github.com/ansoncloud8/am-tunnel' target='_blank'>am-tunnel</a>
-<iframe src='https://ghbtns.com/github-btn.html?user=ansoncloud8&repo=am-tunnel&type=star&count=true&size=large' frameborder='0' scrolling='0' width='170' height='30' title='GitHub'></iframe>
-<a href='//${hostName}/sub/${userIDArray[0]}' target='_blank'>VLESS节点订阅连接(v2rayU、v2rayN等工具)自动生成</a> <button onclick='copyToClipboard("${sublink}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='${subbestip}' target='_blank'>VLESS节点订阅连接(v2rayU、v2rayN等工具)优选IP</a> <button onclick='copyToClipboard("${subbestip}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='clash://install-config?url=${encodeURIComponent(`https://${hostName}/sub/${userIDArray[0]}?format=clash`)}}' target='_blank'>Clash节点订阅连接(clash-verge-rev、openclash等工具)自动生成</a> <button onclick='copyToClipboard("${clashlink}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='clash://install-config?url=${encodeURIComponent(subbestip)}' target='_blank'>Clash节点订阅连接(clash-verge-rev、openclash等工具)优选IP</a> <button onclick='copyToClipboard("${clashlink}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='sing-box://import-remote-profile?url=${encodeURIComponent(subbestip)}' target='_blank'>(sin-box工具)节点订阅连接优选IP</a> <button onclick='copyToClipboard("${singboxlink}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='${quantumultxlink}' target='_blank'>(Quantumult X工具)节点订阅连接优选IP</a> <button onclick='copyToClipboard("${quantumultxlink}")'><i class="fa fa-clipboard"></i> Copy</button>
-<a href='sn://subscription?url=${encodeURIComponent(subbestip)}' target='_blank'>nekobox节点订阅连接优选IP</a>
-</p>`;
-	// HTML Head with CSS and FontAwesome library
-	const htmlHead = `
-  <head>
-	<title>tunnel: VLESS configuration</title>
-	<meta name='description' content='This is a tool for generating VLESS protocol configurations. Give us a star on GitHub https://ansoncloud8.github.io if you found it useful!'>
-	<style>
-	body {
-	  font-family: Arial, sans-serif;
-	  background-color: #f0f0f0;
-	  color: #333;
-	  padding: 0px;
-	}
-
-	a {
-	  color: #1a0dab;
-	  text-decoration: none;
-	}
-	img {
-	  max-width: 100%;
-	  height: auto;
-	}
-
-	pre {
-	  white-space: pre-wrap;
-	  word-wrap: break-word;
-	  background-color: #fff;
-	  border: 1px solid #ddd;
-	  padding: 0px;
-	  margin: 10px 0;
-	}
-	/* Dark mode */
-	@media (prefers-color-scheme: dark) {
-	  body {
-		background-color: #333;
-		color: #f0f0f0;
-	  }
-
-	  a {
-		color: #9db4ff;
-	  }
-
-	  pre {
-		background-color: #282a36;
-		border-color: #6272a4;
-	  }
-	}
-	</style>
-
-	<!-- Add FontAwesome library -->
-	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'>
-  </head>
-  `;
-
-	// Join output with newlines, wrap inside <html> and <body>
-	return `
-  <html>
-  ${htmlHead}
-  <body>
-  <pre style='background-color: transparent; border: none;'>${header}</pre>
-  <pre>${output}</pre>
-  </body>
-  <script>
-	function copyToClipboard(text) {
-	  navigator.clipboard.writeText(text)
-		.then(() => {
-		  alert("Copied to clipboard");
-		})
-		.catch((err) => {
-		  console.error("Failed to copy to clipboard:", err);
-		});
-	}
-  </script>
-  </html>`;
-}
-
-let portSet_http = new Set([80, 8080, 8880, 2052, 2086, 2095, 2082]);
-let portSet_https = new Set([443, 8443, 2053, 2096, 2087, 2083]);
-
-function createVLESSSub(userID_Path, hostName, format, dq) {
-	const userIDArray = userID_Path.includes(',') ? userID_Path.split(',') : [userID_Path];
-	const commonUrlPart_http = `?encryption=none&security=none&fp=random&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#`;
-	const commonUrlPart_https = `?encryption=none&security=tls&sni=${hostName}&fp=random&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#`;
-	//trojan
-	const trojan_http = `?alpn=http%2F1.1&security=none&fp=random&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#`;
-	const trojan_https = `?alpn=http%2F1.1&security=tls&sni=${hostName}&fp=random&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#`;
-//const trojanLink = `trojan://${密码}@${address}:${port}?security=tls&sni=${sni}&alpn=http%2F1.1&fp=randomized&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径)}#${encodeURIComponent(addressid + 节点备注)}`;
-
-	const output = userIDArray.flatMap((userID) => {
-		if (format === 'qx') {
-			var host = hostName.split('.').slice(1).join('.');
-			const httpsConfigurations = Array.from(portSet_https).flatMap((port) => {
-				if(dq){
-					let tag = '📶 CF_' + port;
-					//🇸🇬 SG：新加坡 🇭🇰 HK：香港 🇰🇷 KR：韩国 🇯🇵 JP：日本 🇬🇧 GB：英国 🇺🇸 US：美国 🇼🇸 TW：台湾
-					if (dq === 'SG') {
-						tag = '🇸🇬 SG_' + port;
-					} else if (dq === 'HK') {
-						tag = '🇭🇰 HK_' + port;
-					} else if (dq === 'KR') {
-						tag = '🇰🇷 KR_' + port;
-					} else if (dq === 'JP') {
-						tag = '🇯🇵 JP_' + port;
-					} else if (dq === 'GB') {
-						tag = '🇬🇧 GB_' + port;
-					} else if (dq === 'US') {
-						tag = '🇺🇸 US_' + port;
-					} else if (dq === 'TW') {
-						tag = '🇼🇸 TW_' + port;
-					} 
-					const sgHttps = 'vless=' + dq.toLowerCase() + '.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=' + tag;
-					return [sgHttps];
-				}
-				const sgHttps = 'vless=sg.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇸🇬 SG_' + port;
-				const hkHttps = 'vless=hk.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇭🇰 HK_' + port;
-				const krHttps = 'vless=kr.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇰🇷 KR_' + port;
-				const jpHttps = 'vless=jp.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇯🇵 JP_' + port;
-				const usHttps = 'vless=us.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇺🇸 US_' + port;
-				const twHttps = 'vless=tw.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=🇼🇸 TW_' + port;
-				const cfHttps = 'vless=cf.' + port + '.' + host + ':' + port + ',method=none,password=' + userID + ',obfs=wss,obfs-uri=/?ed=2048,obfs-host=' + hostName + ',tls-verification=true,tls-host=' + hostName + ',fast-open=false,udp-relay=false,tag=📶 CF_' + port;
-				return [sgHttps, hkHttps, krHttps, jpHttps, usHttps, twHttps, cfHttps];
-			});
-			
-			return [...httpsConfigurations];
-		} else if (format === 'trojan') {
-			const httpConfigurations = Array.from(portSet_http).flatMap((port) => {
-				if (!hostName.includes('pages.dev')) {
-					const urlPart = tagName + ` (${hostName}-HTTP-${port})`;
-					const vlessMainHttp = 'trojan://' + userID + '@' + hostName + ':' + port + trojan_http + urlPart;
-					return autoaddress.flatMap((proxyIP) => {
-						const vlessSecHttp = 'trojan://' + userID + '@' + proxyIP + ':' + port + trojan_https + urlPart + '-' + proxyIP;
-						return [vlessMainHttp, vlessSecHttp];
-					});
-				}
-				return [];
-			});
-
-			const httpsConfigurations = Array.from(portSet_https).flatMap((port) => {
-				const urlPart = tagName + ` (${hostName}-HTTPS-${port})`;
-				const vlessMainHttps = 'trojan://' + userID + '@' + hostName + ':' + port + trojan_http + urlPart;
-				return autoaddress.flatMap((proxyIP) => {
-					const vlessSecHttps = 'trojan://' + userID + '@' + proxyIP + ':' + port + trojan_https + urlPart + '-' + proxyIP;
-					return [vlessMainHttps, vlessSecHttps];
-				});
-			});
-
-			return [...httpConfigurations, ...httpsConfigurations];
-			
-		}else {
-			const httpConfigurations = Array.from(portSet_http).flatMap((port) => {
-				if (!hostName.includes('pages.dev')) {
-					const urlPart = tagName + ` (${hostName}-HTTP-${port})`;
-					const vlessMainHttp = 'vless://' + userID + '@' + hostName + ':' + port + commonUrlPart_http + urlPart;
-					return autoaddress.flatMap((proxyIP) => {
-						const vlessSecHttp = 'vless://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_http + urlPart + '-' + proxyIP;
-						return [vlessMainHttp, vlessSecHttp];
-					});
-				}
-				return [];
-			});
-
-			const httpsConfigurations = Array.from(portSet_https).flatMap((port) => {
-				const urlPart = tagName + ` (${hostName}-HTTPS-${port})`;
-				const vlessMainHttps = 'vless://' + userID + '@' + hostName + ':' + port + commonUrlPart_https + urlPart;
-				return autoaddress.flatMap((proxyIP) => {
-					const vlessSecHttps = 'vless://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_https + urlPart + '-' + proxyIP;
-					return [vlessMainHttps, vlessSecHttps];
-				});
-			});
-
-			return [...httpConfigurations, ...httpsConfigurations];
-		}
-	});
-
-	return output.join('\n');
-}
-
-function createVlessBestIpSub(userID_Path, hostName, newAddressesapi, format) {
-
-	addresses = addresses.concat(newAddressesapi);
-	// 使用Set对象去重
-	const uniqueAddresses = [...new Set(addresses)];
-
-	const responseBody = uniqueAddresses.map((address, i) => {
-		let port = "443";
-		let addressid = address;
-		let dq = tagName;
-
-		const match = addressid.match(regex);
-		if (!match) {
-			if (address.includes(':') && address.includes('#')) {
-				const parts = address.split(':');
-				address = parts[0];
-				const subParts = parts[1].split('#');
-				port = subParts[0];
-				addressid = subParts[1];
-			} else if (address.includes(':')) {
-				const parts = address.split(':');
-				address = parts[0];
-				port = parts[1];
-			} else if (address.includes('#')) {
-				const parts = address.split('#');
-				address = parts[0];
-				addressid = parts[1];
-			}
-
-			if (addressid.includes(':')) {
-				addressid = addressid.split(':')[0];
-			}
-		} else {
-			address = match[1];
-			port = match[2] || port;
-			addressid = match[3] || address;
-		}
-		dq = addressid + '_' + i;
-		//🇸🇬 SG：新加坡 🇭🇰 HK：香港 🇰🇷 KR：韩国 🇯🇵 JP：日本 🇬🇧 GB：英国 🇺🇸 US：美国 🇼🇸 TW：台湾
-		if (addressid.includes('AM')) {
-			addressid = addressid;
-			dq = addressid;
-		} else if (addressid === 'SG') {
-			addressid = '🇸🇬 SG_' + i;
-		} else if (addressid === 'HK') {
-			addressid = '🇭🇰 HK_' + i;
-		} else if (addressid === 'KR') {
-			addressid = '🇰🇷 KR_' + i;
-		} else if (addressid === 'JP') {
-			addressid = '🇯🇵 JP_' + i;
-		} else if (addressid === 'GB') {
-			addressid = '🇬🇧 GB_' + i;
-		} else if (addressid === 'US') {
-			addressid = '🇺🇸 US_' + i;
-		} else if (addressid === 'TW') {
-			addressid = '🇼🇸 TW_' + i;
-		} else if (addressid === 'CF') {
-			addressid = '📶 ' + addressid + '_' + i;
-		} else {
-			addressid = '📶 ' + addressid + '_' + i;
-			dq = tagName+ '_' + i;
-		}
-		
-		let vlessLink = `vless://${userID_Path}@${address}:${port}?encryption=none&security=tls&sni=${hostName}&fp=random&type=ws&host=${hostName}&path=&path=%2F%3Fed%3D2048#${dq}`;
-		if (port === '80' || port === '8080' || port === '8880' || port === '2052' || port === '2086' || port === '2095' || port === '2082' ) {
-			vlessLink = `vless://${userID_Path}@${address}:${port}?encryption=none&security=&fp=random&type=ws&host=${hostName}&path=&path=%2F%3Fed%3D2048#${dq}`;
-		}
-		
-		if (format === 'qx') {
-			//80, 8080, 8880, 2052, 2086, 2095, 2082
-			//443, 8443, 2053, 2096, 2087, 2083
-			if (port === '80' || port === '8080' || port === '8880' || port === '2052' || port === '2086' || port === '2095' || port === '2082' ) {
-				vlessLink = `vless=${address}:${port},method=none,password=${userID_Path},obfs=ws,obfs-uri=/?ed=2048,obfs-host=${hostName},fast-open=false,udp-relay=false,tag=${addressid}`;
-			}else{
-				vlessLink = `vless=${address}:${port},method=none,password=${userID_Path},obfs=wss,obfs-uri=/?ed=2048,obfs-host=${hostName},tls-verification=true,tls-host=${hostName},fast-open=false,udp-relay=false,tag=${addressid}`;
-			}
-		}
-		//trojan
-		if (format === 'trojan') {
-			if (port === '80' || port === '8080' || port === '8880' || port === '2052' || port === '2086' || port === '2095' || port === '2082' ) {
-				vlessLink = `trojan://${userID_Path}@${address}:${port}?alpn=http%2F1.1&security=tls&sni=${hostName}&fp=random&type=ws&host=${hostName}&path=&path=%2F%3Fed%3D2048#${dq}`;
-			}else{
-				vlessLink = `trojan://${userID_Path}@${address}:${port}?alpn=http%2F1.1&security=&fp=random&type=ws&host=${hostName}&path=&path=%2F%3Fed%3D2048#${dq}`;
-			}
-		}
-		
-
-		return vlessLink;
-	}).join('\n');
-	return responseBody;
-}
-
-
+/** -------------------Home page-------------------------------- */
 async function nginx() {
 	const text = `
 	<!DOCTYPE html>
